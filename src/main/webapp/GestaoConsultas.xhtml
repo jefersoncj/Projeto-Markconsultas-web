@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+
+	<ui:define name="corpo">
+
+		<f:metadata>
+			<f:viewAction action="#{gestaoConsultasBean.consultar()}" />
+			
+		</f:metadata>
+
+		<h1>Cadastro de Consultas</h1>
+
+		<h:form id="frm">
+
+			<p:messages id="msgs" />
+
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Nova" icon="ui-icon-document"
+						action="#{gestaoConsultasBean.prepararNovoCadastro}"
+						process="@this" update="consulta-dialog"
+						oncomplete="PF('edicaoConsultaDialog').show()">
+						<p:resetInput target="consulta-dialog" />
+					</p:commandButton>
+
+					<span class="ui-separator"> <span
+						class="ui-icon ui-icon-grip-dotted-vertical" />
+					</span>
+
+					<p:commandButton icon="ui-icon-pencil" title="Editar"
+						process="@this" update="consulta-dialog"
+						oncomplete="PF('edicaoConsultaDialog').show()"
+						disabled="#{gestaoConsultasBean.consultaSelecionada == null}">
+						<p:resetInput target="consulta-dialog" />
+
+						<f:setPropertyActionListener
+							value="#{gestaoConsultasBean.consultaSelecionada}"
+							target="#{gestaoConsultasBean.consultaEdicao}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						process="@this" update="consultas-table msgs toolbar"
+						action="#{gestaoConsultasBean.excluir}"
+						disabled="#{gestaoConsultasBean.consultaSelecionada == null}">
+
+						<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+							message="Tem certeza que deseja excluir a consulta?" />
+
+					</p:commandButton>
+
+					<!-- <p:commandButton icon="ui-icon-arrowthick-1-s"
+						title="Exportar para XLS" ajax="false" immediate="true">
+						<p:dataExporter type="xls" target="consultas-table"
+							fileName="consultas" />
+					</p:commandButton> -->
+				</f:facet>
+			</p:toolbar>
+			
+			<p:contextMenu for="consultas-table">
+				<p:menuitem value = "Delete" update="consultas-table" icon="ui-icon-close" />
+			</p:contextMenu>
+			<p:dataTable value="#{gestaoConsultasBean.todasConsultas}"
+				var="consulta" emptyMessage="Nenhuma consulta cadastrada." rows="10"
+				paginator="true" paginatorPosition="bottom" style="margin-top: 10px"
+				id="consultas-table"
+				selection="#{gestaoConsultasBean.consultaSelecionada}"
+				selectionMode="single" rowKey="#{consulta.id}">
+
+				<p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+
+				<p:column headerText="Paciente" sortBy="#{consulta.paciente.nome}"
+				filterBy="#{consulta.paciente.nome}" filterEvent="change" filterStyle="max-width: 300px; min-width: 300px;">
+					<h:outputText value="#{consulta.paciente.nome}" />
+				</p:column>
+				<p:column headerText="Nº Convênio " width="100">
+					<h:outputText value="#{consulta.paciente.numConvenio}" />
+				</p:column>
+				<p:column headerText="Convênio" width="120">
+					<h:outputText value="#{consulta.paciente.convenio}" />
+				</p:column>
+
+				<p:column headerText="RG" width="120">
+					<h:outputText value="#{consulta.paciente.rg}" />
+				</p:column>
+
+				<p:column headerText="Pagamento" width="120">
+					<h:outputText value="#{consulta.condPagto.condPagto}" />
+				</p:column>
+
+				<p:column headerText="Data Consulta" width="100"
+				filterBy="#{consulta.dataConsulta}" filterEvent="change">
+					<h:outputText value="#{consulta.dataConsulta}">
+					<f:convertDateTime pattern="dd/MM/yyyy" locale="pt"/> 
+				</h:outputText>  
+
+				</p:column>
+
+				
+				<p:column headerText="Status" width="120"
+				filterBy="#{consulta.status}" filterEvent="change"> 
+					<h:outputText value="#{consulta.status}" styleClass="#{consulta.status eq 'ABERTA' ? 'aberta' : consulta.status eq 'CANCELADA' ? 'cancelada' : null}"/>
+					
+				</p:column>
+			</p:dataTable>
+
+			<p:dialog header="Nova consulta" widgetVar="edicaoConsultaDialog"
+				id="consulta-dialog" resizable="false" modal="true" 
+				closeOnEscape="true" > 
+			
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="consulta-dialog" />
+				
+				<p:panelGrid columns="2" id="painel-dialog">
+
+					<p:outputLabel value="Código" for="codigo" />
+					<p:outputLabel id="codigo" size="60" 
+						value="#{gestaoConsultasBean.consultaEdicao.id}" />
+
+					<p:outputLabel value="Data Consulta" for="data-consulta" />
+					<p:calendar id="data-consulta" size="10"
+						value="#{gestaoConsultasBean.consultaEdicao.dataConsulta}"
+						pattern="dd/MM/yyyy" mask="99/99/9999" locale="pt"/>
+						
+					<p:outputLabel value="Nº autorização" for="cod_autorizacao" />
+					<p:inputMask id="cod_autorizacao" size="70"  mask="9?999999999999999" 
+						value="#{gestaoConsultasBean.consultaEdicao.codAutorizacao}" />
+						
+					<p:outputLabel value="Médico" for="medico" />
+					<p:selectOneMenu id="medico"
+						value="#{gestaoConsultasBean.consultaEdicao.medico}" filter="true" filterMatchMode="contains"
+						converter="medicoConverter">
+						<f:selectItem itemLabel="Selecione" />
+						<f:selectItems value="#{gestaoConsultasBean.todosMedicos}"
+							var="medico" itemLabel="#{medico.nomeMedico}" itemValue="#{medico}" />
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="Paciente" for="paciente" />
+					<p:selectOneMenu id="paciente"
+						value="#{gestaoConsultasBean.consultaEdicao.paciente}" filter="true" filterMatchMode="contains"
+						converter="pacienteConverter">
+						<f:selectItem itemLabel="Selecione" />
+						<f:selectItems value="#{gestaoConsultasBean.todosPacientes}"
+							var="paciente" itemLabel="#{paciente}" itemValue="#{paciente}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Tipo Consulta" for="tipo" />
+					<p:selectOneMenu id="tipo"	
+						value="#{gestaoConsultasBean.consultaEdicao.tipo}">
+						<f:selectItems value="#{gestaoConsultasBean.tiposConsultas}"
+							var="tipo" itemLabel="#{tipo.descricao}" itemValue="#{tipo}" />
+						<p:ajax listener="#{gestaoConsultasBean.setValue()}" update="procedimento" /> 
+							
+					</p:selectOneMenu>
+
+
+					
+					<p:outputLabel value="Procedimento" for="procedimento" />
+					<p:selectOneMenu id="procedimento" 		
+						value="#{gestaoConsultasBean.consultaEdicao.procedimento}" disabled="#{!gestaoConsultasBean.value}" required="#{gestaoConsultasBean.value}" filter="true" filterMatchMode="contains"
+						 converter="procedimentoConverter"> 
+						<f:selectItem itemLabel="Selecione"  noSelectionOption="true"/>
+						<f:selectItems value="#{gestaoConsultasBean.todosProcedimentos}"
+							var="procedimento" itemLabel="#{procedimento.dsProcedimento}" itemValue="#{procedimento}" />
+					</p:selectOneMenu>		
+				
+					
+
+					<p:outputLabel value="Status Consulta" for="status" />
+					<p:selectOneMenu id="status"
+						value="#{gestaoConsultasBean.consultaEdicao.status}">
+						
+						<f:selectItems value="#{gestaoConsultasBean.statusConsultas}"
+							var="status" itemLabel="#{status.descricao}"
+							itemValue="#{status}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Pagamento" for="pagamento" />
+					<p:selectOneMenu id="pagamento"
+						value="#{gestaoConsultasBean.consultaEdicao.condPagto}" filter="true" filterMatchMode="contains"
+						converter="condPagtoConverter">
+						<f:selectItem itemLabel="Selecione" />
+						<f:selectItems value="#{gestaoConsultasBean.todosCondPagtos}"
+							var="condPagto" itemLabel="#{condPagto.condPagto}" itemValue="#{condPagto}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Valor" />
+					<p:inputText size="12"
+						value="#{gestaoConsultasBean.consultaEdicao.valor}" label="Valor">
+						<f:convertNumber locale="pt_BR" maxFractionDigits="2"
+							minFractionDigits="2" />
+					</p:inputText>
+					
+					<p:outputLabel value="Observação" />
+					<p:inputTextarea autoResize="true"
+						value="#{gestaoConsultasBean.consultaEdicao.obs}" label="Observação"
+						rows="3" maxlength="150" cols="70">
+						
+					</p:inputTextarea>
+					
+
+					<p:outputLabel />
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{gestaoConsultasBean.salvar}" 
+						icon="ui-icon-disk"
+						process="consulta-dialog"
+						update="msgs-dialog painel-dialog"
+						oncomplete="if (!args.validationFailed) PF('edicaoConsultaDialog').hide()" />
+				</p:panelGrid>
+			</p:dialog>
+
+		</h:form>
+
+	</ui:define>
+</ui:composition>

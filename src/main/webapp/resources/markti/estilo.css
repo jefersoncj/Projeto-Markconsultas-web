@@ -1,0 +1,93 @@
+@charset "utf-8";
+
+body {
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0px;
+	font-weight: normal;
+	
+}
+
+header {
+	padding: 20px;
+	margin-bottom: 20px;
+	height: 30px;
+	width:100%;
+	background-color: #47639E;
+	color: #fffafa;
+	box-shadow: 0px 2px 2px #ccc;
+	position: fixed;
+	z-index: 20!important; 
+overflow: visible!important; 
+}
+
+#conteudo {
+	padding: 100px 8px
+}
+
+footer {
+	border-top: 1px solid #ccc;
+	/* padding: 5px 8px;
+	margin-top: 20px;
+	margin-bottom: 10px; */
+	
+	padding: 30px;
+	margin-top: 100%;
+	height: 30px;
+	background-color: #47639E;
+	color: #fffafa;
+	box-shadow: 0px 2px 2px #ccc;
+	
+	
+}
+
+h1 {
+	font-size: 24px;
+	font-weight: 500;
+	padding: 0px;
+	margin: 0px;
+	margin-bottom: 10px
+}
+
+.ajax-status {
+	position: fixed;
+	top: 85px;
+	right: 20px;
+	width: 35px;
+	height: 35px
+	 
+}
+.aberta{  
+ 
+    color: green;  
+} 
+.cancelada{  
+ 
+    color: orange;  
+} 
+
+.selectOneMenu input.ui-inputtext{
+	width:395px;
+}
+.ui-dialog-titlebar{
+	
+	background:#47639E;
+	color: #fffafa;
+}
+
+.ui-selectonemenu-trigger{
+	background:#37528D;
+	color: #fffafa;
+	
+	background-color: #d3d7cf;
+}
+
+
+.ui-layout-north { 
+z-index: 20!important; 
+overflow: visible!important; 
+} 
+
+.ui-layout-north .ui-layout-unit-content { 
+overflow: visible!important; 
+} 

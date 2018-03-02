@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="corpo">
+		<f:metadata>
+			<f:viewAction action="#{gestaoMedicosBean.consultar()}" />
+		</f:metadata>
+
+		<h1>Cadastro de Medico</h1>
+
+		<h:form id="frm">
+
+			<p:messages id="msgs" />
+
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						action="#{gestaoMedicosBean.prepararNovoCadastro}"
+						process="@this" update="medico-dialog"
+						oncomplete="PF('edicaoMedicoDialog').show()">
+						<p:resetInput target="medico-dialog" />
+					</p:commandButton>
+
+					<span class="ui-separator"> <span
+						class="ui-icon ui-icon-grip-dotted-vertical" />
+					</span>
+
+					<p:commandButton icon="ui-icon-pencil" title="Editar"
+						process="@this" update="medico-dialog"
+						oncomplete="PF('edicaoMedicoDialog').show()"
+						disabled="#{gestaoMedicosBean.medicoSelecionado == null}">
+						<p:resetInput target="medico-dialog" />
+
+						<f:setPropertyActionListener
+							value="#{gestaoMedicosBean.medicoSelecionado}"
+							target="#{gestaoMedicosBean.medicoEdicao}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						process="@this" update="medicos-table msgs toolbar"
+						action="#{gestaoMedicosBean.excluir()}"
+						disabled="#{gestaoMedicosBean.medicoSelecionado == null}">
+
+						<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+							message="Tem certeza que deseja excluir o medico?" />
+
+					</p:commandButton>
+
+				<!-- 	<p:commandButton icon="ui-icon-arrowthick-1-s"
+						title="Exportar para XLS" ajax="false" immediate="true">
+						<p:dataExporter type="xls" target="medicos-table"
+							fileName="medicos" />
+					</p:commandButton> -->
+				</f:facet>
+			</p:toolbar>
+
+			<p:dataTable value="#{gestaoMedicosBean.todosMedicos}"
+				var="medico" emptyMessage="Nenhum médico cadastrado." rows="10"
+				paginator="true" paginatorPosition="bottom" style="margin-top: 10px"
+				id="medicos-table"
+				
+				selection="#{gestaoMedicosBean.medicoSelecionado}"
+				selectionMode="single" rowKey="#{medico.id}">
+
+				<p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+
+
+				<p:column headerText="Código " width="100"
+				filterBy="#{medico.id}" filterEvent="change">
+					<h:outputText value="#{medico.id}" />
+				</p:column>
+		
+				<p:column headerText="Descrição" width="120"
+				filterBy="#{medico.nomeMedico}" filterEvent="change">
+					<h:outputText value="#{medico.nomeMedico}" />
+				</p:column>
+				
+				<p:column headerText="CRM" width="120"
+				filterBy="#{medico.crm}" filterEvent="change">
+					<h:outputText value="#{medico.crm}" />
+				</p:column>
+				
+				<p:column headerText="Especialidade" width="120"
+				filterBy="#{medico.especialidade.dsEspecialidade}" filterEvent="change">
+					<h:outputText value="#{medico.especialidade.dsEspecialidade}" />
+				</p:column>
+			</p:dataTable>
+
+
+			<p:dialog header="Novo médico" widgetVar="edicaoMedicoDialog"
+				id="medico-dialog" resizable="false" modal="true"
+				closeOnEscape="true">
+
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="medico-dialog" />
+
+				<p:panelGrid columns="2" id="painel-dialog">
+					
+				<p:outputLabel value="Descrição do Medico" for="nome-medico" />
+					<p:inputText id="nome-medico" size="60" maxlength="120"
+						value="#{gestaoMedicosBean.medicoEdicao.nomeMedico}" />
+				
+				<p:outputLabel value="CRM" for="crm" />
+					<p:inputMask id="crm" size="60"  mask="9?999999999999999" 
+						value="#{gestaoMedicosBean.medicoEdicao.crm}" />
+						
+				<p:outputLabel value="Especialidade" for="especialidade" />
+					<p:selectOneMenu id="especialidade" value="#{gestaoMedicosBean.medicoEdicao.especialidade}" converter="especialidadeConverter">
+						<f:selectItem itemLabel="Selecione" noSelectionOption="true"/>
+						<f:selectItems value="#{gestaoMedicosBean.todasEspecialidades}"
+							var="especialidade" itemLabel="#{especialidade.dsEspecialidade}"
+							itemValue="#{especialidade}" />
+					</p:selectOneMenu>
+
+
+					<p:outputLabel />
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{gestaoMedicosBean.salvar()}" 
+						icon="ui-icon-disk"
+						process="medico-dialog"
+						update="msgs-dialog painel-dialog"
+						oncomplete="if (!args.validationFailed) PF('edicaoMedicoDialog').hide()" />
+				</p:panelGrid>
+			</p:dialog>
+
+		</h:form>
+
+	</ui:define>
+</ui:composition>

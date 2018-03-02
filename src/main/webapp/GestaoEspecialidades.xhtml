@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="corpo">
+		<f:metadata>
+			<f:viewAction action="#{gestaoEspecialidadesBean.consultar()}" />
+		</f:metadata>
+
+		<h1>Cadastro de Especialidades Médicas</h1>
+
+		<h:form id="frm">
+
+			<p:messages id="msgs" />
+
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						action="#{gestaoEspecialidadesBean.prepararNovoCadastro}"
+						process="@this" update="especialidade-dialog"
+						oncomplete="PF('edicaoEspecialidadeDialog').show()">
+						<p:resetInput target="especialidade-dialog" />
+					</p:commandButton>
+
+					<span class="ui-separator"> <span
+						class="ui-icon ui-icon-grip-dotted-vertical" />
+					</span>
+
+					<p:commandButton icon="ui-icon-pencil" title="Editar"
+						process="@this" update="especialidade-dialog"
+						oncomplete="PF('edicaoEspecialidadeDialog').show()"
+						disabled="#{gestaoEspecialidadesBean.especialidadeSelecionado == null}">
+						<p:resetInput target="especialidade-dialog" />
+
+						<f:setPropertyActionListener
+							value="#{gestaoEspecialidadesBean.especialidadeSelecionado}"
+							target="#{gestaoEspecialidadesBean.especialidadeEdicao}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						process="@this" update="especialidades-table msgs toolbar"
+						action="#{gestaoEspecialidadesBean.excluir()}"
+						disabled="#{gestaoEspecialidadesBean.especialidadeSelecionado == null}">
+
+						<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+							message="Tem certeza que deseja excluir o especialidade?" />
+
+					</p:commandButton>
+
+					<!-- <p:commandButton icon="ui-icon-arrowthick-1-s"
+						title="Exportar para XLS" ajax="false" immediate="true">
+						<p:dataExporter type="xls" target="especialidades-table"
+							fileName="especialidades" />
+					</p:commandButton> -->
+				</f:facet>
+			</p:toolbar>
+
+			<p:dataTable value="#{gestaoEspecialidadesBean.todasEspecialidades}"
+				var="especialidade" emptyMessage="Nenhum especialidade cadastrada." rows="10"
+				paginator="true" paginatorPosition="bottom" style="margin-top: 10px"
+				id="especialidades-table"
+				
+				selection="#{gestaoEspecialidadesBean.especialidadeSelecionado}"
+				selectionMode="single" rowKey="#{especialidade.id}">
+
+				<p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+
+
+				<p:column headerText="Código " width="100"
+				filterBy="#{especialidade.id}" filterEvent="change">
+					<h:outputText value="#{especialidade.id}" />
+				</p:column>
+		
+				<p:column headerText="Descrição" width="120"
+				filterBy="#{especialidade.dsEspecialidade}" filterEvent="change">
+					<h:outputText value="#{especialidade.dsEspecialidade}" />
+				</p:column>
+
+			</p:dataTable>
+
+
+			<p:dialog header="Nova especialidade médica" widgetVar="edicaoEspecialidadeDialog"
+				id="especialidade-dialog" resizable="false" modal="true"
+				closeOnEscape="true">
+
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="especialidade-dialog" />
+
+				<h:panelGrid columns="1" id="painel-dialog">
+					
+				<p:outputLabel value="Descrição da Especialidade" for="ds-especialidade" />
+					<p:inputText id="ds-especialidade" size="60" maxlength="120"
+						value="#{gestaoEspecialidadesBean.especialidadeEdicao.dsEspecialidade}" />
+
+
+					<p:outputLabel />
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{gestaoEspecialidadesBean.salvar()}" 
+						icon="ui-icon-disk"
+						process="especialidade-dialog"
+						update="msgs-dialog painel-dialog"
+						oncomplete="if (!args.validationFailed) PF('edicaoEspecialidadeDialog').hide()" />
+				</h:panelGrid>
+			</p:dialog>
+
+		</h:form>
+
+	</ui:define>
+</ui:composition>

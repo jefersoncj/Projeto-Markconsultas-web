@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:define name="corpo">
+		<f:metadata>
+			<f:viewAction action="#{gestaoPacientesBean.consultar()}" />
+		</f:metadata>
+	
+		<h1>Cadastro de Pacientes</h1>
+	
+		<h:form id="frm">
+	
+			<p:messages id="msgs" />
+			
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						action="#{gestaoPacientesBean.prepararNovoCadastro}"
+						process="@this" update="paciente-dialog"
+						oncomplete="PF('edicaoPacienteDialog').show()">
+						<p:resetInput target="paciente-dialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical" />
+            		</span>
+            		
+            		<p:commandButton icon="ui-icon-pencil" title="Editar" 
+            			process="@this" update="paciente-dialog"
+            			oncomplete="PF('edicaoPacienteDialog').show()"
+            			disabled="#{gestaoPacientesBean.pacienteSelecionado == null}">
+            			<p:resetInput target="paciente-dialog" />
+            			
+            			<f:setPropertyActionListener value="#{gestaoPacientesBean.pacienteSelecionado}" 
+            				target="#{gestaoPacientesBean.pacienteEdicao}" />
+            		</p:commandButton>
+            		
+            		<p:commandButton icon="ui-icon-trash" title="Excluir"
+            			process="@this" update="pacientes-table msgs toolbar"
+            			action="#{gestaoPacientesBean.excluir}"
+            			disabled="#{gestaoPacientesBean.pacienteSelecionado == null}">
+            			
+            			<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+            				message="Tem certeza que deseja excluir a paciente?" />
+            			
+            		</p:commandButton>
+            		
+            		<!-- <p:commandButton icon="ui-icon-arrowthick-1-s" title="Exportar para XLS"
+            				ajax="false" immediate="true">
+            			<p:dataExporter type="xls" target="pacientes-table" fileName="pacientes" />
+            		</p:commandButton> -->
+				</f:facet>
+			</p:toolbar>
+	
+			
+			<p:dataTable value="#{gestaoPacientesBean.todosPacientes}" var="paciente"
+					emptyMessage="Nenhuma paciente cadastrada." rows="10" 
+					paginator="true" paginatorPosition="bottom"
+					style="margin-top: 10px" id="pacientes-table"
+					selection="#{gestaoPacientesBean.pacienteSelecionado}"
+					selectionMode="single" rowKey="#{paciente.id}" >
+				
+				<p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+				
+				<p:column headerText="Nome Paciente" sortBy="#{paciente.nome}" 
+				filterBy="#{paciente.nome}" filterEvent="change" filterStyle="max-width: 300px; min-width: 300px;">
+					<h:outputText value="#{paciente.nome}" />
+				</p:column>
+				<p:column headerText="Nº Convenio" width="100"
+				filterBy="#{paciente.numConvenio}" filterEvent="change">
+					<h:outputText value="#{paciente.numConvenio}" />
+				</p:column>
+				
+				<p:column headerText="Convênio" width="100"
+				filterBy="#{paciente.convenio.dsConvenio}" filterEvent="change">
+					<h:outputText value="#{paciente.convenio.dsConvenio}" />
+				</p:column>
+				
+				<p:column headerText="RG" width="100"
+				filterBy="#{paciente.rg}" filterEvent="change">
+					<h:outputText value="#{paciente.rg}" />
+				</p:column>
+				
+				<p:column headerText="CPF" width="120"
+				filterBy="#{paciente.cpf}" filterEvent="change">
+					<h:outputText value="#{paciente.cpf}" />
+				</p:column>
+				
+				<p:column headerText="Fone fixo" width="100"
+				filterBy="#{paciente.foneFixo}" filterEvent="change">
+					<h:outputText value="#{paciente.foneFixo}" />
+				</p:column>
+				<p:column headerText="Celular" width="100"
+				filterBy="#{paciente.celular1}" filterEvent="change">
+					<h:outputText value="#{paciente.celular1}" />
+				</p:column>
+				
+			</p:dataTable>
+		
+			<p:dialog header="Novo paciente" widgetVar="edicaoPacienteDialog" id="paciente-dialog"
+					resizable="false" modal="true" closeOnEscape="true">
+				
+			
+        		
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="paciente-dialog" />
+				
+				
+       			 
+				<p:panelGrid columns="4" id="painel-dialog">
+					<p:outputLabel value="Nome" for="nome-paciente" />
+					<p:inputText id="nome-paciente" size="40" maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.nome}" />
+				
+					<p:outputLabel value="Email" for="email" />
+					<p:inputText id="email" size="40" maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.email}" />
+					
+					<p:outputLabel value="Nº Convônio" for="numero-convenio"/>
+					<p:inputText id="numero-convenio" size="40" maxlength="20"
+						value="#{gestaoPacientesBean.pacienteEdicao.numConvenio}" />
+						
+						
+					<p:outputLabel value="Convenio" for="convenio" />
+					<p:selectOneMenu id="convenio" value="#{gestaoPacientesBean.pacienteEdicao.convenio}" 
+					filter="true" filterMatchMode="contains" required="true" converter="convenioConverter">
+						<f:selectItem itemLabel="Selecione" noSelectionOption="true"/>
+						<f:selectItems value="#{gestaoPacientesBean.todosConvenios}"
+							var="convenio" itemLabel="#{convenio.dsConvenio}"
+							itemValue="#{convenio}" />	
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="CPF" for="cpf" />
+					<p:inputMask id="cpf" size="14" maxlength="14"
+						value="#{gestaoPacientesBean.pacienteEdicao.cpf}"
+						mask="999.999.999-99" />
+						
+						<p:outputLabel value="RG" for="rg" />
+					<p:inputText id="rg" size="20" maxlength="18"
+						value="#{gestaoPacientesBean.pacienteEdicao.rg}" />
+					
+					<p:outputLabel value="Data de nascimento" for="data-nascimento" />
+					<p:calendar id="data-nascimento" size="10"
+						value="#{gestaoPacientesBean.pacienteEdicao.dataNasc}" 
+						pattern="dd/MM/yyyy" mask="99/99/9999" locale="pt"/>
+					
+					<p:outputLabel value="Fone fixo" for="fone-fixo" />
+					<p:inputMask id="fone-fixo" 
+						value="#{gestaoPacientesBean.pacienteEdicao.foneFixo}" 
+						mask="(999) 9999-9999"/>
+						
+					<p:outputLabel value="Celular" for="celular1" />
+					<p:inputMask id="celular1" 
+						value="#{gestaoPacientesBean.pacienteEdicao.celular1}" 
+						mask="(999) 999-999999"/>
+				
+					<p:outputLabel value="Celular" for="celular2"  />
+					<p:inputMask id="celular2"
+						value="#{gestaoPacientesBean.pacienteEdicao.celular2}" 
+						mask="(999) 999-999999"/>
+						
+					<p:outputLabel value="Celular" for="celular3" />
+					<p:inputMask id="celular3" 
+						value="#{gestaoPacientesBean.pacienteEdicao.celular3}" 
+						mask="(999) 999-999999"/>
+						
+					
+					
+					
+					<p:outputLabel value="Nome Mãe" for="nome_mae" />
+					<p:inputText id="nome_mae" size="40"  maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.nomeMae}" />
+						
+					<p:outputLabel value="Nome Pai" for="nome_pai" />
+					<p:inputText id="nome_pai" size="40"  maxlength="100"  
+						value="#{gestaoPacientesBean.pacienteEdicao.nomePai}" />
+					
+					<p:outputLabel value="Cep" for="cod-cep" />
+					<p:inputMask id="cod-cep" 
+						value="#{gestaoPacientesBean.pacienteEdicao.codCep}" 
+						mask="99.999-999"/>
+						
+					
+					<p:outputLabel value="Logradouro" for="logradouro" />
+					<p:inputText id="logradouro" size="40" maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.logradouro}" />
+					
+				
+					<p:outputLabel value="Número" for="numero" />
+					<p:inputText id="numero" size="20"  maxlength="14" 
+ 						value="#{gestaoPacientesBean.pacienteEdicao.numero}" />
+				
+					<p:outputLabel value="Bairro" for="bairro" />
+					<p:inputText id="bairro" size="40" maxlength="100" 
+						value="#{gestaoPacientesBean.	pacienteEdicao.bairro}" />
+					
+					
+					<p:outputLabel value="Cidade" for="cidade" />
+					<p:inputText id="cidade" size="40" maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.cidade}" />
+					
+					<p:outputLabel value="UF" for="uf" />
+					<p:selectOneMenu id="uf"
+						value="#{gestaoPacientesBean.pacienteEdicao.uf}">
+						<f:selectItem itemLabel="Selecione" />
+						<f:selectItems value="#{gestaoPacientesBean.ufSiglas}"
+							var="uf" itemLabel="#{uf.descricao}" itemValue="#{uf}" />
+					</p:selectOneMenu>
+						
+					<p:outputLabel value="Complemento" for="complemento" />
+					<p:inputText id="complemento" size="40"  maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.complemento}" />
+						
+					<p:outputLabel value="Observação" for="obs" />
+					<p:inputText id="obs" size="40"  maxlength="100" 
+						value="#{gestaoPacientesBean.pacienteEdicao.obs}" />
+					
+					<p:outputLabel/>
+					
+      					
+					<p:commandButton value="Salvar" id="salvar-button"  
+						action="#{gestaoPacientesBean.salvar}" 
+						icon="ui-icon-disk"
+						process="paciente-dialog" update="msgs-dialog painel-dialog"
+						oncomplete="if (!args.validationFailed) PF('edicaoPacienteDialog').hide()" />
+					</p:panelGrid>	
+				
+			</p:dialog>
+		
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
